@@ -1,812 +1,711 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <link rel="icon" type="image/png" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda de Tarefas</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minha Agenda</title>
 
-    <!-- Fonte Inter para tipografia moderna e legível -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Ícone e PWA -->
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#4f46e5" />
 
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- React 18 (UMD), ReactDOM e Babel Standalone via CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
 
-    <!-- Firebase Compat SDK v10 via CDN (app, auth e firestore) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    /* Animação do check verde estilo Nike */
+    @keyframes popCheck {
+      0% { transform: scale(0.6); opacity: 0.4; }
+      60% { transform: scale(1.18); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .nike-check-anim {
+      animation: popCheck 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', system-ui, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Barra de rolagem discreta para o Kanban horizontal e listas internas */
-        .custom-scrollbar::-webkit-scrollbar {
-            height: 8px;
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 9999px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: #94a3b8;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #334155;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: #475569;
-        }
-    </style>
+    /* Barra de rolagem discreta */
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+  </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
-    <div id="root"></div>
+<body class="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/30">
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+  <!-- Topo -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-lg shadow-indigo-500/20">
+          <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="3" />
+            <path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white sm:text-xl">Minha Agenda</h1>
+          <p id="header-subtitle" class="text-xs text-slate-400">Organização diária</p>
+        </div>
+      </div>
 
-        // =========================================================================
-        // CONFIGURAÇÃO DO FIREBASE (Credenciais do projeto minhaagenda-1dd5b)
-        // =========================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyD3BlVz3O8y6AF6IQkdG1nKNAZZ-O4jcMw",
-  authDomain: "minha-agenda-d822c.firebaseapp.com",
-  projectId: "minha-agenda-d822c",
-  storageBucket: "minha-agenda-d822c.firebasestorage.app",
-  messagingSenderId: "424693571025",
-  appId: "1:424693571025:web:2f068af3f077f36e5a54f0"
-        };
+      <div class="flex items-center gap-2.5">
+        <!-- Botão Ver Outros Dias -->
+        <button id="btn-toggle-other-days"
+          class="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-indigo-500/60 hover:bg-slate-800 sm:text-sm">
+          <svg class="h-4 w-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round" />
+          </svg>
+          <span>Ver outros dias</span>
+        </button>
 
-        const LOCAL_STORAGE_KEY = 'agenda-de-tarefas-v2';
-        const THEME_STORAGE_KEY = 'agenda-dark-mode';
+        <!-- Status Firebase -->
+        <div id="sync-badge"
+          class="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300">
+          <span id="sync-dot" class="h-2 w-2 rounded-full bg-amber-400"></span>
+          <span id="sync-text">Salvo Localmente</span>
+        </div>
+      </div>
+    </div>
+  </header>
 
-        // =========================================================================
-        // ÍCONES VETORIAIS (SVG Inline para nitidez máxima)
-        // =========================================================================
-        const RocketIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
-                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
-                <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+  <!-- Conteúdo Principal -->
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+
+    <!-- Barra de Navegação do Dia -->
+    <section class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <!-- Controle Anterior / Data Atual / Próximo -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button id="btn-prev-day" title="Dia anterior"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/80 text-slate-200 transition hover:border-indigo-500 hover:bg-slate-800">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
-        );
+          </button>
 
-        // Símbolo estilizado da Nike (Swoosh) em branco para tarefas concluídas
-        const NikeSwooshIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 fill-white">
-                <path d="M21 8.719L7.836 14.303C6.74 14.768 5.818 15 5.075 15c-.836 0-1.445-.295-1.819-.884-.485-.76-.273-1.982.559-3.272.494-.754 1.122-1.446 1.734-2.108-.144.234-1.415 2.349-.025 3.345.275.2.666.298 1.147.298.386 0 .829-.063 1.316-.19L21 8.719z" />
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 id="selected-day-title" class="text-xl font-extrabold capitalize text-white sm:text-2xl">Hoje</h2>
+              <button id="btn-go-today"
+                class="hidden rounded-lg bg-indigo-500/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/30">
+                Voltar para Hoje
+              </button>
+            </div>
+            <p id="selected-day-date" class="text-xs font-medium capitalize text-slate-400 sm:text-sm"></p>
+          </div>
+
+          <button id="btn-next-day" title="Próximo dia"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/80 text-slate-200 transition hover:border-indigo-500 hover:bg-slate-800">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
-        );
+          </button>
+        </div>
 
-        const FlagIcon = ({ filled = false, size = 15 }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-                <line x1="4" y1="22" x2="4" y2="15"></line>
+        <!-- Seletor direto de data + contadores -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs font-medium text-slate-300">
+            <span>Pendentes: <strong id="count-pending" class="text-indigo-400">0</strong></span>
+            <span class="text-slate-700">|</span>
+            <span>Concluídas: <strong id="count-done" class="text-emerald-400">0</strong></span>
+          </div>
+
+          <input id="date-picker" type="date"
+            class="rounded-xl border border-slate-700 bg-slate-800/90 px-3 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-indigo-500 sm:text-sm [color-scheme:dark]" />
+        </div>
+      </div>
+
+      <!-- Faixa rápida da semana -->
+      <div id="week-strip" class="mt-4 grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
+    </section>
+
+    <!-- Painel Expansível: Ver Outros Dias (Calendário + Resumo de outros dias) -->
+    <section id="other-days-panel" class="mb-6 hidden rounded-2xl border border-indigo-500/30 bg-slate-900/90 p-5 shadow-2xl">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Outros dias com tarefas</h3>
+          <p class="text-xs text-slate-400">Clique em qualquer dia para abrir a agenda dele na tela principal</p>
+        </div>
+        <button id="btn-close-other-days"
+          class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800">
+          Fechar
+        </button>
+      </div>
+      <div id="other-days-grid" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
+    </section>
+
+    <!-- Formulário de Nova Tarefa -->
+    <section class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-lg sm:p-5">
+      <form id="task-form" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="relative flex-1">
+          <input id="task-input" type="text" required placeholder="Adicionar nova tarefa para este dia..."
+            class="w-full rounded-xl border border-slate-700/90 bg-slate-950/80 px-4 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 sm:text-base" />
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <!-- Botão Bandeira de Prioridade -->
+          <button type="button" id="btn-new-priority"
+            class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-rose-500/60"
+            title="Marcar como prioridade">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 3v18h2v-7h10l-2-4 2-4H7V3H5z" />
             </svg>
-        );
+            <span>Prioridade</span>
+          </button>
 
-        const PlusIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
+          <button type="submit"
+            class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-[0.99] sm:flex-none">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M12 5v14M5 12h14" stroke-linecap="round" />
             </svg>
-        );
+            <span>Adicionar</span>
+          </button>
+        </div>
+      </form>
 
-        const TrashIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-        );
+      <!-- Filtros -->
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-3.5">
+        <div class="flex items-center gap-1.5">
+          <button data-filter="all" class="filter-btn rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white">Todas</button>
+          <button data-filter="pending" class="filter-btn rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800">Pendentes</button>
+          <button data-filter="priority" class="filter-btn rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800">Prioridade</button>
+          <button data-filter="done" class="filter-btn rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800">Concluídas</button>
+        </div>
+        <p class="text-xs text-slate-500">Prioridades aparecem primeiro</p>
+      </div>
+    </section>
 
-        const ChevronLeftIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        );
+    <!-- Grade de Tarefas Lado a Lado (Espaçosa) -->
+    <section>
+      <div id="tasks-grid" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
 
-        const ChevronRightIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        );
+      <!-- Estado Vazio -->
+      <div id="empty-state" class="hidden rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 px-6 py-14 text-center">
+        <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/80 text-slate-400">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-slate-200">Nenhuma tarefa para este dia</h3>
+        <p class="mt-1 text-sm text-slate-400">Adicione uma tarefa acima ou navegue para outro dia.</p>
+      </div>
+    </section>
+  </main>
 
-        const SunIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-        );
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const MoonIcon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-        );
+    // =========================================================
+    // COLE AQUI AS SUAS 6 CHAVES DO FIREBASE (DO SEU index.html)
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY_AQUI",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.firebasestorage.app",
+      messagingSenderId: "SEU_NUMERO",
+      appId: "SEU_APP_ID"
+    };
 
-        // =========================================================================
-        // COMPONENTE PRINCIPAL: AgendaApp
-        // =========================================================================
-        function AgendaApp() {
-            // Carrega dados locais imediatamente para inicialização instantânea
-            const [tasks, setTasks] = useState(() => {
-                try {
-                    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-                    return saved ? JSON.parse(saved) : [];
-                } catch {
-                    return [];
-                }
-            });
+    // Estado da aplicação
+    const LOCAL_KEY = "minha_agenda_tarefas_v2";
+    let db = null;
+    let cloudActive = false;
+    let allTasks = [];
+    let selectedDate = toDateKey(new Date());
+    let currentFilter = "all";
+    let newPriority = false;
 
-            // Status da nuvem: 'connecting' | 'cloud' | 'local'
-            const [syncStatus, setSyncStatus] = useState('connecting');
-            const [baseDate, setBaseDate] = useState(new Date());
-            const [newTasksInputs, setNewTasksInputs] = useState({});
-            const [newTasksPriority, setNewTasksPriority] = useState({});
-            const [editingTaskId, setEditingTaskId] = useState(null);
-            const [editingText, setEditingText] = useState('');
+    // Elementos DOM
+    const syncBadge = document.getElementById("sync-badge");
+    const syncDot = document.getElementById("sync-dot");
+    const syncText = document.getElementById("sync-text");
+    const selectedDayTitle = document.getElementById("selected-day-title");
+    const selectedDayDate = document.getElementById("selected-day-date");
+    const btnGoToday = document.getElementById("btn-go-today");
+    const datePicker = document.getElementById("date-picker");
+    const weekStrip = document.getElementById("week-strip");
+    const tasksGrid = document.getElementById("tasks-grid");
+    const emptyState = document.getElementById("empty-state");
+    const countPending = document.getElementById("count-pending");
+    const countDone = document.getElementById("count-done");
+    const taskForm = document.getElementById("task-form");
+    const taskInput = document.getElementById("task-input");
+    const btnNewPriority = document.getElementById("btn-new-priority");
+    const otherDaysPanel = document.getElementById("other-days-panel");
+    const otherDaysGrid = document.getElementById("other-days-grid");
 
-            // Tema claro/escuro com persistência no localStorage
-            const [darkMode, setDarkMode] = useState(() => {
-                try {
-                    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-                    if (savedTheme !== null) return JSON.parse(savedTheme);
-                    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                } catch {
-                    return false;
-                }
-            });
+    // Helpers de data
+    function toDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
 
-            // Referência ao documento Firestore
-            const docRefRef = useRef(null);
+    function parseDateKey(key) {
+      const [y, m, d] = key.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
 
-            // Aplica o tema no elemento raiz <html>
-            useEffect(() => {
-                if (darkMode) {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-                try {
-                    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(darkMode));
-                } catch (e) {
-                    console.warn('Não foi possível salvar o tema:', e);
-                }
-            }, [darkMode]);
+    function addDays(dateKey, delta) {
+      const d = parseDateKey(dateKey);
+      d.setDate(d.getDate() + delta);
+      return toDateKey(d);
+    }
 
-            // =====================================================================
-            // CONEXÃO COM FIREBASE + SINCRONIZAÇÃO EM TEMPO REAL + TIMEOUT DE 5s
-            // =====================================================================
-            useEffect(() => {
-                let unsubscribe = null;
-                let isMounted = true;
-                let resolved = false;
+    function getRelativeLabel(dateKey) {
+      const todayKey = toDateKey(new Date());
+      if (dateKey === todayKey) return "Hoje";
+      if (dateKey === addDays(todayKey, 1)) return "Amanhã";
+      if (dateKey === addDays(todayKey, -1)) return "Ontem";
+      return parseDateKey(dateKey).toLocaleDateString("pt-BR", { weekday: "long" });
+    }
 
-                // Timeout de segurança (5s) para nunca travar em "Conectando..."
-                const fallbackTimer = setTimeout(() => {
-                    if (isMounted && !resolved) {
-                        setSyncStatus('local');
-                    }
-                }, 5000);
+    function formatLongDate(dateKey) {
+      return parseDateKey(dateKey).toLocaleDateString("pt-BR", {
+        weekday: "long", day: "2-digit", month: "long", year: "numeric"
+      });
+    }
 
-                const initFirebase = async () => {
-                    try {
-                        if (typeof firebase === 'undefined') {
-                            throw new Error('Firebase SDK não disponível.');
-                        }
+    // Status da nuvem
+    function setCloudStatus(isOnline) {
+      cloudActive = isOnline;
+      if (isOnline) {
+        syncBadge.className = "inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300";
+        syncDot.className = "h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]";
+        syncText.textContent = "Nuvem Ativa";
+      } else {
+        syncBadge.className = "inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300";
+        syncDot.className = "h-2 w-2 rounded-full bg-amber-400";
+        syncText.textContent = "Salvo Localmente";
+      }
+    }
 
-                        if (!firebase.apps.length) {
-                            firebase.initializeApp(firebaseConfig);
-                        }
+    // Persistência local (fallback)
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(LOCAL_KEY);
+        allTasks = raw ? JSON.parse(raw) : [];
+      } catch {
+        allTasks = [];
+      }
+      renderAll();
+    }
 
-                        const auth = firebase.auth();
-                        const db = firebase.firestore();
+    function saveLocal() {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(allTasks));
+    }
 
-                        // Login anônimo para acesso seguro ao Firestore
-                        await auth.signInAnonymously();
+    // Inicializar Firebase
+    async function initFirebase() {
+      loadLocal();
+      if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("SUA_API_KEY")) {
+        setCloudStatus(false);
+        return;
+      }
 
-                        if (!isMounted) return;
+      try {
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        db = getFirestore(app);
+        await signInAnonymously(auth);
 
-                        // Documento compartilhado para sincronização entre dispositivos
-                        const docRef = db.collection('agenda_tarefas').doc('minha_agenda');
-                        docRefRef.current = docRef;
+        const q = query(collection(db, "tarefas"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+          allTasks = snapshot.docs.map((d) => ({
+            id: d.id,
+            date: d.data().date || toDateKey(new Date()),
+            text: d.data().text || "",
+            done: Boolean(d.data().done),
+            priority: Boolean(d.data().priority),
+            createdAt: d.data().createdAt || Date.now()
+          }));
+          saveLocal();
+          setCloudStatus(true);
+          renderAll();
+        }, (err) => {
+          console.error("Erro Firestore:", err);
+          setCloudStatus(false);
+        });
+      } catch (err) {
+        console.error("Erro Firebase:", err);
+        setCloudStatus(false);
+      }
+    }
 
-                        // Escuta atualizações em tempo real
-                        unsubscribe = docRef.onSnapshot(
-                            (docSnap) => {
-                                if (!isMounted) return;
-                                resolved = true;
-                                clearTimeout(fallbackTimer);
-                                setSyncStatus('cloud');
+    // Operações CRUD
+    async function createTask(text, priority, dateKey) {
+      const payload = {
+        text: text.trim(),
+        priority: Boolean(priority),
+        done: false,
+        date: dateKey,
+        createdAt: Date.now()
+      };
 
-                                if (docSnap.exists) {
-                                    const data = docSnap.data();
-                                    if (Array.isArray(data.tasks)) {
-                                        setTasks(data.tasks);
-                                        try {
-                                            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.tasks));
-                                        } catch (e) {
-                                            console.warn('Erro ao atualizar cache local:', e);
-                                        }
-                                    }
-                                } else {
-                                    // Inicializa documento na nuvem com tarefas locais existentes
-                                    try {
-                                        const localRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
-                                        const localTasks = localRaw ? JSON.parse(localRaw) : [];
-                                        docRef.set({
-                                            tasks: localTasks,
-                                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                                        }, { merge: true }).catch(() => {});
-                                    } catch (e) {
-                                        console.warn('Erro ao inicializar nuvem:', e);
-                                    }
-                                }
-                            },
-                            (error) => {
-                                console.warn('Erro no Firestore listener, usando modo local:', error);
-                                if (isMounted) {
-                                    resolved = true;
-                                    clearTimeout(fallbackTimer);
-                                    setSyncStatus('local');
-                                }
-                            }
-                        );
-                    } catch (error) {
-                        console.warn('Falha ao conectar no Firebase, usando modo local:', error);
-                        if (isMounted) {
-                            resolved = true;
-                            clearTimeout(fallbackTimer);
-                            setSyncStatus('local');
-                        }
-                    }
-                };
+      if (cloudActive && db) {
+        await addDoc(collection(db, "tarefas"), payload);
+      } else {
+        allTasks.unshift({ id: "local_" + Date.now(), ...payload });
+        saveLocal();
+        renderAll();
+      }
+    }
 
-                initFirebase();
+    async function toggleDone(task) {
+      const nextDone = !task.done;
+      if (cloudActive && db && !task.id.startsWith("local_")) {
+        await updateDoc(doc(db, "tarefas", task.id), { done: nextDone });
+      } else {
+        task.done = nextDone;
+        saveLocal();
+        renderAll();
+      }
+    }
 
-                return () => {
-                    isMounted = false;
-                    clearTimeout(fallbackTimer);
-                    if (unsubscribe) unsubscribe();
-                };
-            }, []);
+    async function togglePriority(task) {
+      const nextPriority = !task.priority;
+      if (cloudActive && db && !task.id.startsWith("local_")) {
+        await updateDoc(doc(db, "tarefas", task.id), { priority: nextPriority });
+      } else {
+        task.priority = nextPriority;
+        saveLocal();
+        renderAll();
+      }
+    }
 
-            // =====================================================================
-            // PERSISTÊNCIA UNIFICADA (Estado + localStorage + Firestore)
-            // =====================================================================
-            const persistTasks = (updatedTasks) => {
-                setTasks(updatedTasks);
+    async function moveTaskToNextDay(task) {
+      const nextDate = addDays(task.date, 1);
+      if (cloudActive && db && !task.id.startsWith("local_")) {
+        await updateDoc(doc(db, "tarefas", task.id), { date: nextDate });
+      } else {
+        task.date = nextDate;
+        saveLocal();
+        renderAll();
+      }
+    }
 
-                // Backup local imediato
-                try {
-                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTasks));
-                } catch (e) {
-                    console.warn('Erro ao salvar no localStorage:', e);
-                }
+    async function removeTask(task) {
+      if (cloudActive && db && !task.id.startsWith("local_")) {
+        await deleteDoc(doc(db, "tarefas", task.id));
+      } else {
+        allTasks = allTasks.filter((t) => t.id !== task.id);
+        saveLocal();
+        renderAll();
+      }
+    }
 
-                // Gravação na nuvem se conectado
-                if (docRefRef.current && syncStatus === 'cloud') {
-                    docRefRef.current.set({
-                        tasks: updatedTasks,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true }).catch((err) => {
-                        console.warn('Erro ao sincronizar na nuvem:', err);
-                        setSyncStatus('local');
-                    });
-                }
-            };
+    // Renderização
+    function renderDateHeader() {
+      const todayKey = toDateKey(new Date());
+      selectedDayTitle.textContent = getRelativeLabel(selectedDate);
+      selectedDayDate.textContent = formatLongDate(selectedDate);
+      datePicker.value = selectedDate;
+      btnGoToday.classList.toggle("hidden", selectedDate === todayKey);
+    }
 
-            // =====================================================================
-            // CÁLCULO DA SEMANA E FORMATAÇÃO DE DATAS
-            // =====================================================================
-            const getStartOfWeek = (date) => {
-                const d = new Date(date);
-                d.setHours(0, 0, 0, 0);
-                d.setDate(d.getDate() - d.getDay()); // Inicia no Domingo
-                return d;
-            };
+    function renderWeekStrip() {
+      weekStrip.innerHTML = "";
+      const todayKey = toDateKey(new Date());
+      const center = parseDateKey(selectedDate);
+      // Mostra de segunda a domingo da semana do dia selecionado
+      const dayOfWeek = center.getDay(); // 0=Dom
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(center);
+      monday.setDate(center.getDate() + diffToMonday);
 
-            const formatDateStr = (date) => {
-                const y = date.getFullYear();
-                const m = String(date.getMonth() + 1).padStart(2, '0');
-                const d = String(date.getDate()).padStart(2, '0');
-                return `${y}-${m}-${d}`;
-            };
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const key = toDateKey(d);
+        const isSelected = key === selectedDate;
+        const isToday = key === todayKey;
 
-            const startOfWeek = getStartOfWeek(baseDate);
-            const weekDays = Array.from({ length: 7 }).map((_, i) => {
-                const d = new Date(startOfWeek);
-                d.setDate(startOfWeek.getDate() + i);
-                return d;
-            });
+        const dayTasks = allTasks.filter((t) => t.date === key);
+        const pendingCount = dayTasks.filter((t) => !t.done).length;
+        const hasPriority = dayTasks.some((t) => !t.done && t.priority);
 
-            const changeWeek = (offset) => {
-                const next = new Date(baseDate);
-                next.setDate(baseDate.getDate() + offset * 7);
-                setBaseDate(next);
-            };
+        const weekdayShort = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+        const dayNum = String(d.getDate()).padStart(2, "0");
 
-            const goToToday = () => setBaseDate(new Date());
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `flex flex-col items-center justify-center rounded-xl border px-1 py-2.5 transition ${
+          isSelected
+            ? "border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+            : isToday
+            ? "border-indigo-500/40 bg-indigo-500/10 text-indigo-200 hover:bg-slate-800"
+            : "border-slate-800 bg-slate-950/50 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80"
+        }`;
 
-            // Formata Mês e Ano em Português (ex: "Novembro de 2026")
-            const rawMonthYear = startOfWeek.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-            const formattedMonthYear = rawMonthYear.charAt(0).toUpperCase() + rawMonthYear.slice(1);
+        btn.innerHTML = `
+          <span class="text-[11px] font-semibold uppercase tracking-wide ${isSelected ? "text-indigo-100" : "text-slate-400"}">${weekdayShort}</span>
+          <span class="mt-0.5 text-base font-extrabold sm:text-lg">${dayNum}</span>
+          <div class="mt-1 flex h-2 items-center gap-1">
+            ${pendingCount > 0 ? `<span class="h-1.5 w-1.5 rounded-full ${hasPriority ? "bg-rose-400" : isSelected ? "bg-white" : "bg-indigo-400"}"></span>` : ""}
+          </div>
+        `;
+        btn.addEventListener("click", () => {
+          selectedDate = key;
+          renderAll();
+        });
+        weekStrip.appendChild(btn);
+      }
+    }
 
-            const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-            const todayStr = formatDateStr(new Date());
+    function renderOtherDaysPanel() {
+      if (otherDaysPanel.classList.contains("hidden")) return;
+      otherDaysGrid.innerHTML = "";
 
-            // =====================================================================
-            // OPERAÇÕES DE TAREFAS
-            // =====================================================================
-            const handleInputChange = (dateStr, value) => {
-                setNewTasksInputs(prev => ({ ...prev, [dateStr]: value }));
-            };
+      const grouped = {};
+      allTasks.forEach((t) => {
+        if (!grouped[t.date]) grouped[t.date] = [];
+        grouped[t.date].push(t);
+      });
 
-            const toggleNewTaskPriority = (dateStr) => {
-                setNewTasksPriority(prev => ({ ...prev, [dateStr]: !prev[dateStr] }));
-            };
+      const dates = Object.keys(grouped).sort();
+      if (dates.length === 0) {
+        otherDaysGrid.innerHTML = `<p class="col-span-full text-sm text-slate-400">Ainda não há tarefas cadastradas em outros dias.</p>`;
+        return;
+      }
 
-            const addTask = (e, dateStr) => {
-                e.preventDefault();
-                const text = (newTasksInputs[dateStr] || '').trim();
-                if (!text) return;
+      dates.forEach((dateKey) => {
+        const list = grouped[dateKey];
+        const pending = list.filter((t) => !t.done).length;
+        const done = list.filter((t) => t.done).length;
+        const isCurrent = dateKey === selectedDate;
 
-                const newTask = {
-                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                    text,
-                    date: dateStr,
-                    completed: false,
-                    priority: !!newTasksPriority[dateStr],
-                    createdAt: Date.now()
-                };
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `flex flex-col items-start rounded-xl border p-3.5 text-left transition ${
+          isCurrent
+            ? "border-indigo-500 bg-indigo-500/15"
+            : "border-slate-800 bg-slate-950/60 hover:border-indigo-500/50 hover:bg-slate-800/70"
+        }`;
 
-                persistTasks([...tasks, newTask]);
-                setNewTasksInputs(prev => ({ ...prev, [dateStr]: '' }));
-                setNewTasksPriority(prev => ({ ...prev, [dateStr]: false }));
-            };
+        const preview = list.slice(0, 2).map((t) =>
+          `<li class="truncate text-xs ${t.done ? "text-slate-500 line-through" : "text-slate-300"}">• ${escapeHtml(t.text)}</li>`
+        ).join("");
 
-            const toggleTaskCompleted = (id) => {
-                const updated = tasks.map(t =>
-                    t.id === id ? { ...t, completed: !t.completed } : t
-                );
-                persistTasks(updated);
-            };
+        card.innerHTML = `
+          <div class="flex w-full items-center justify-between gap-2">
+            <span class="text-sm font-bold capitalize text-white">${getRelativeLabel(dateKey)}</span>
+            <span class="rounded-md bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-300">${parseDateKey(dateKey).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span>
+          </div>
+          <div class="mt-1 flex items-center gap-2 text-[11px] font-medium">
+            <span class="text-indigo-400">${pending} pendente(s)</span>
+            <span class="text-slate-600">•</span>
+            <span class="text-emerald-400">${done} concluída(s)</span>
+          </div>
+          <ul class="mt-2.5 w-full space-y-1">${preview}</ul>
+        `;
 
-            const toggleTaskPriority = (id) => {
-                const updated = tasks.map(t =>
-                    t.id === id ? { ...t, priority: !t.priority } : t
-                );
-                persistTasks(updated);
-            };
+        card.addEventListener("click", () => {
+          selectedDate = dateKey;
+          otherDaysPanel.classList.add("hidden");
+          renderAll();
+        });
+        otherDaysGrid.appendChild(card);
+      });
+    }
 
-            const deleteTask = (id) => {
-                const updated = tasks.filter(t => t.id !== id);
-                persistTasks(updated);
-            };
+    function renderTasks() {
+      const dayTasks = allTasks.filter((t) => t.date === selectedDate);
+      countPending.textContent = dayTasks.filter((t) => !t.done).length;
+      countDone.textContent = dayTasks.filter((t) => t.done).length;
 
-            const startEdit = (task) => {
-                setEditingTaskId(task.id);
-                setEditingText(task.text);
-            };
+      let filtered = [...dayTasks];
+      if (currentFilter === "pending") filtered = filtered.filter((t) => !t.done);
+      if (currentFilter === "priority") filtered = filtered.filter((t) => t.priority);
+      if (currentFilter === "done") filtered = filtered.filter((t) => t.done);
 
-            const cancelEdit = () => {
-                setEditingTaskId(null);
-                setEditingText('');
-            };
+      // Ordenação: pendentes primeiro -> prioridade primeiro -> mais recente
+      filtered.sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        if (a.priority !== b.priority) return a.priority ? -1 : 1;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
 
-            const saveEdit = (id) => {
-                const trimmed = editingText.trim();
-                if (!trimmed) {
-                    cancelEdit();
-                    return;
-                }
-                const updated = tasks.map(t =>
-                    t.id === id ? { ...t, text: trimmed } : t
-                );
-                persistTasks(updated);
-                setEditingTaskId(null);
-                setEditingText('');
-            };
+      tasksGrid.innerHTML = "";
+      emptyState.classList.toggle("hidden", filtered.length > 0);
 
-            // Progresso dinâmico da semana exibida
-            const weekDateStrings = new Set(weekDays.map(formatDateStr));
-            const weekTasks = tasks.filter(t => weekDateStrings.has(t.date));
-            const completedWeekTasks = weekTasks.filter(t => t.completed).length;
-            const weekProgress = weekTasks.length === 0
-                ? 0
-                : Math.round((completedWeekTasks / weekTasks.length) * 100);
+      filtered.forEach((task) => {
+        const card = document.createElement("article");
+        card.className = `group relative flex min-h-[128px] flex-col justify-between rounded-2xl border p-5 transition-all duration-200 ${
+          task.done
+            ? "border-slate-800/70 bg-slate-900/40 opacity-70"
+            : task.priority
+            ? "border-rose-500/50 bg-gradient-to-br from-slate-900 to-rose-950/20 shadow-lg shadow-rose-950/20 hover:border-rose-400/70"
+            : "border-slate-800 bg-slate-900/80 shadow-md hover:border-indigo-500/50 hover:bg-slate-900"
+        }`;
 
-            return (
-                <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col transition-colors duration-300">
-                    <div className="w-full max-w-[1680px] mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 flex flex-col">
+        card.innerHTML = `
+          <div class="flex items-start gap-3.5">
+            <!-- Botão Check estilo Nike -->
+            <button type="button" class="btn-check mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 transition ${
+              task.done
+                ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
+                : "border-slate-600 bg-slate-950/60 text-transparent hover:border-emerald-400"
+            }" title="Marcar como concluída">
+              <svg class="h-5 w-5 ${task.done ? "nike-check-anim" : ""}" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 5.5c-4.9 2.3-9.3 4.8-13.2 7.5-1.1.8-2.3 1.1-3.1.5-.8-.5-.7-1.9.1-3.3-.9 1.6-2.2 3.8-1.5 5.4.7 1.6 2.8 1.8 4.8.7 4.2-2.2 8.7-5.6 12.9-10.8z"/>
+              </svg>
+            </button>
 
-                        {/* ===================================================== */}
-                        {/* CABEÇALHO SUPERIOR                                     */}
-                        {/* ===================================================== */}
-                        <header className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:px-6 sm:py-5 mb-5 flex flex-col lg:flex-row justify-between items-center gap-4 transition-colors">
+            <div class="min-w-0 flex-1">
+              <p class="break-words text-base font-medium leading-relaxed ${
+                task.done ? "text-slate-400 line-through" : "text-slate-100"
+              }">${escapeHtml(task.text)}</p>
+            </div>
+          </div>
 
-                            {/* Esquerda: Ícone Foguete + Título + Barra de Progresso */}
-                            <div className="flex items-center gap-3.5 w-full lg:w-auto justify-center lg:justify-start">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/25 flex items-center justify-center">
-                                    <RocketIcon />
-                                </div>
-                                <div className="min-w-0">
-                                    <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-                                        Agenda de Tarefas
-                                    </h1>
-                                    <div className="flex items-center gap-2.5 mt-1.5">
-                                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                                            Progresso da Semana:
-                                        </span>
-                                        <div className="w-28 sm:w-36 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-full transition-all duration-500 ease-out"
-                                                style={{ width: `${weekProgress}%` }}
-                                            ></div>
-                                        </div>
-                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
-                                            {weekProgress}%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+          <!-- Rodapé do card com ações -->
+          <div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-800/70 pt-3">
+            <div>
+              ${task.priority && !task.done
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-500/15 px-2.5 py-1 text-[11px] font-bold text-rose-300">
+                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 3v18h2v-7h10l-2-4 2-4H7V3H5z"/></svg>
+                    Prioridade
+                   </span>`
+                : task.done
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-[11px] font-bold text-emerald-300">Concluída</span>`
+                : `<span class="text-[11px] font-medium text-slate-500">Tarefa do dia</span>`
+              }
+            </div>
 
-                            {/* Centro: Navegação de Semanas */}
-                            <div className="flex items-center bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/80 p-1 shadow-inner">
-                                <button
-                                    onClick={() => changeWeek(-1)}
-                                    className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
-                                    title="Semana anterior"
-                                    aria-label="Semana anterior"
-                                >
-                                    <ChevronLeftIcon />
-                                </button>
-                                <div className="min-w-[168px] sm:min-w-[190px] text-center font-semibold text-sm sm:text-base text-slate-700 dark:text-slate-200 px-2 select-none">
-                                    {formattedMonthYear}
-                                </div>
-                                <button
-                                    onClick={() => changeWeek(1)}
-                                    className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
-                                    title="Próxima semana"
-                                    aria-label="Próxima semana"
-                                >
-                                    <ChevronRightIcon />
-                                </button>
-                            </div>
+            <div class="flex items-center gap-1">
+              <!-- Bandeira de Prioridade -->
+              <button type="button" class="btn-flag rounded-lg p-2 transition ${
+                task.priority
+                  ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
+                  : "text-slate-500 hover:bg-slate-800 hover:text-rose-400"
+              }" title="Alternar prioridade">
+                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M5 3v18h2v-7h10l-2-4 2-4H7V3H5z" />
+                </svg>
+              </button>
 
-                            {/* Direita: Status Nuvem + Tema + Ir para Hoje */}
-                            <div className="flex items-center flex-wrap justify-center gap-2.5">
-                                <div
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 select-none"
-                                    title={
-                                        syncStatus === 'cloud'
-                                            ? 'Sincronizado em tempo real com o Firebase'
-                                            : syncStatus === 'local'
-                                            ? 'Salvo localmente neste navegador'
-                                            : 'Conectando à nuvem...'
-                                    }
-                                >
-                                    {syncStatus === 'cloud' && (
-                                        <>
-                                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.75)]"></span>
-                                            <span>Nuvem Ativa</span>
-                                        </>
-                                    )}
-                                    {syncStatus === 'local' && (
-                                        <>
-                                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                                            <span>Salvo Localmente</span>
-                                        </>
-                                    )}
-                                    {syncStatus === 'connecting' && (
-                                        <>
-                                            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse"></span>
-                                            <span>Conectando...</span>
-                                        </>
-                                    )}
-                                </div>
+              <!-- Adiar para o dia seguinte -->
+              <button type="button" class="btn-move rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-indigo-400" title="Mover para o dia seguinte">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
 
-                                <button
-                                    onClick={() => setDarkMode(!darkMode)}
-                                    className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-amber-400 transition-colors"
-                                    title={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
-                                    aria-label="Alternar tema"
-                                >
-                                    {darkMode ? <SunIcon /> : <MoonIcon />}
-                                </button>
+              <!-- Excluir -->
+              <button type="button" class="btn-delete rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-red-400" title="Excluir tarefa">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
 
-                                <button
-                                    onClick={goToToday}
-                                    className="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 font-semibold text-sm border border-indigo-200/80 dark:border-indigo-500/30 transition-colors"
-                                >
-                                    Ir para Hoje
-                                </button>
-                            </div>
-                        </header>
+        card.querySelector(".btn-check").addEventListener("click", () => toggleDone(task));
+        card.querySelector(".btn-flag").addEventListener("click", () => togglePriority(task));
+        card.querySelector(".btn-move").addEventListener("click", () => moveTaskToNextDay(task));
+        card.querySelector(".btn-delete").addEventListener("click", () => removeTask(task));
 
-                        {/* ===================================================== */}
-                        {/* PAINEL KANBAN HORIZONTAL: 7 DIAS DA SEMANA             */}
-                        {/* ===================================================== */}
-                        <main className="flex-1 flex flex-nowrap gap-3.5 overflow-x-auto pb-4 snap-x snap-mandatory custom-scrollbar items-stretch">
-                            {weekDays.map((day, index) => {
-                                const dateStr = formatDateStr(day);
-                                const isToday = dateStr === todayStr;
-                                const inputValue = newTasksInputs[dateStr] || '';
-                                const isInputPriority = !!newTasksPriority[dateStr];
+        tasksGrid.appendChild(card);
+      });
+    }
 
-                                // Ordenação:
-                                // 1º Pendentes com prioridade -> 2º Pendentes normais -> 3º Concluídas no final
-                                const dayTasks = tasks
-                                    .filter(t => t.date === dateStr)
-                                    .sort((a, b) => {
-                                        if (a.completed !== b.completed) return a.completed ? 1 : -1;
-                                        if (!!a.priority !== !!b.priority) return a.priority ? -1 : 1;
-                                        return (a.createdAt || 0) - (b.createdAt || 0);
-                                    });
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
 
-                                return (
-                                    <section
-                                        key={dateStr}
-                                        className={`flex-shrink-0 flex-1 min-w-[265px] lg:min-w-[215px] snap-center rounded-2xl border flex flex-col min-h-[520px] h-[calc(100vh-200px)] max-h-[760px] transition-all duration-200 ${
-                                            isToday
-                                                ? 'bg-white dark:bg-slate-900 border-indigo-500 dark:border-indigo-500 ring-2 ring-indigo-500/15 dark:ring-indigo-500/20 shadow-md shadow-indigo-500/5'
-                                                : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-sm'
-                                        }`}
-                                    >
-                                        {/* Cabeçalho do Dia */}
-                                        <div
-                                            className={`px-4 py-3.5 rounded-t-2xl border-b transition-colors ${
-                                                isToday
-                                                    ? 'bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-100 dark:border-indigo-900/60'
-                                                    : 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
-                                            }`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <h2
-                                                        className={`text-sm font-bold uppercase tracking-wider ${
-                                                            isToday
-                                                                ? 'text-indigo-700 dark:text-indigo-400'
-                                                                : 'text-slate-600 dark:text-slate-300'
-                                                        }`}
-                                                    >
-                                                        {DIAS_SEMANA[index]}
-                                                    </h2>
-                                                    {isToday && (
-                                                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-indigo-600 text-white">
-                                                            Hoje
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <span
-                                                    className={`text-xl font-extrabold tabular-nums ${
-                                                        isToday
-                                                            ? 'text-indigo-700 dark:text-indigo-300'
-                                                            : 'text-slate-900 dark:text-slate-100'
-                                                    }`}
-                                                >
-                                                    {day.getDate()}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
-                                                {dayTasks.length} {dayTasks.length === 1 ? 'tarefa' : 'tarefas'}
-                                            </p>
-                                        </div>
+    function renderAll() {
+      renderDateHeader();
+      renderWeekStrip();
+      renderTasks();
+      renderOtherDaysPanel();
+    }
 
-                                        {/* Campo Nova Tarefa + Bandeira de Prioridade + Botão Adicionar */}
-                                        <div className="p-2.5 border-b border-slate-100 dark:border-slate-800/80">
-                                            <form
-                                                onSubmit={(e) => addTask(e, dateStr)}
-                                                className={`flex items-center gap-1 rounded-xl border p-1 transition-all ${
-                                                    isInputPriority
-                                                        ? 'bg-rose-50/60 dark:bg-rose-950/25 border-rose-300 dark:border-rose-500/50 focus-within:ring-2 focus-within:ring-rose-500/30'
-                                                        : 'bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:border-indigo-400 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20'
-                                                }`}
-                                            >
-                                                <input
-                                                    type="text"
-                                                    value={inputValue}
-                                                    onChange={(e) => handleInputChange(dateStr, e.target.value)}
-                                                    placeholder="Nova tarefa..."
-                                                    className="flex-1 min-w-0 bg-transparent px-2 py-1.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
-                                                />
+    // Eventos da UI
+    document.getElementById("btn-prev-day").addEventListener("click", () => {
+      selectedDate = addDays(selectedDate, -1);
+      renderAll();
+    });
 
-                                                {/* Ícone clicável de Prioridade (Bandeira) */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleNewTaskPriority(dateStr)}
-                                                    title={isInputPriority ? 'Prioridade alta ativada' : 'Marcar como prioridade'}
-                                                    aria-label="Alternar prioridade da nova tarefa"
-                                                    className={`flex-shrink-0 p-1.5 rounded-lg transition-all ${
-                                                        isInputPriority
-                                                            ? 'bg-rose-500 text-white shadow-sm shadow-rose-500/30 scale-105'
-                                                            : 'text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
-                                                    }`}
-                                                >
-                                                    <FlagIcon filled={isInputPriority} size={15} />
-                                                </button>
+    document.getElementById("btn-next-day").addEventListener("click", () => {
+      selectedDate = addDays(selectedDate, 1);
+      renderAll();
+    });
 
-                                                <button
-                                                    type="submit"
-                                                    disabled={!inputValue.trim()}
-                                                    title="Adicionar tarefa"
-                                                    aria-label="Adicionar tarefa"
-                                                    className="flex-shrink-0 p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-700 text-white disabled:text-slate-400 dark:disabled:text-slate-500 transition-colors"
-                                                >
-                                                    <PlusIcon />
-                                                </button>
-                                            </form>
-                                        </div>
+    btnGoToday.addEventListener("click", () => {
+      selectedDate = toDateKey(new Date());
+      renderAll();
+    });
 
-                                        {/* Lista de Tarefas do Dia */}
-                                        <div className="p-2.5 flex-1 overflow-y-auto space-y-2 custom-scrollbar">
-                                            {dayTasks.length === 0 ? (
-                                                <div className="h-full flex items-center justify-center select-none">
-                                                    <span className="text-sm font-medium text-slate-400 dark:text-slate-600">
-                                                        Livre
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                dayTasks.map((task) => {
-                                                    const isPriorityActive = !!task.priority && !task.completed;
-                                                    return (
-                                                        /* NOTA: Não aplicamos opacity no container pai quando concluído,
-                                                           para que o marcador verde com símbolo da Nike fique em 100% de opacidade! */
-                                                        <div
-                                                            key={task.id}
-                                                            className={`group relative flex items-start gap-2.5 p-2.5 rounded-xl border transition-all duration-200 ${
-                                                                task.completed
-                                                                    ? 'bg-slate-50/70 dark:bg-slate-800/30 border-slate-200/60 dark:border-slate-800/70'
-                                                                    : isPriorityActive
-                                                                    ? 'bg-rose-50/70 dark:bg-rose-950/25 border-rose-200/90 dark:border-rose-800/50 border-l-4 border-l-rose-500 dark:border-l-rose-500 shadow-sm'
-                                                                    : 'bg-white dark:bg-slate-800/80 border-slate-200/70 dark:border-slate-700/70 hover:border-indigo-300 dark:hover:border-indigo-500/50 shadow-sm'
-                                                            }`}
-                                                        >
-                                                            {/* Botão de Conclusão: Verde Vibrante + Símbolo da Nike em 100% opacidade quando feito */}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => toggleTaskCompleted(task.id)}
-                                                                className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none ${
-                                                                    task.completed
-                                                                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/45 ring-2 ring-emerald-400/35 opacity-100 scale-105'
-                                                                        : 'border-2 border-slate-300 dark:border-slate-600 hover:border-emerald-500 dark:hover:border-emerald-400 bg-transparent'
-                                                                }`}
-                                                                title={task.completed ? 'Desmarcar tarefa' : 'Marcar como concluída'}
-                                                                aria-label={task.completed ? 'Desmarcar tarefa' : 'Concluir tarefa'}
-                                                            >
-                                                                {task.completed && <NikeSwooshIcon />}
-                                                            </button>
+    datePicker.addEventListener("change", (e) => {
+      if (e.target.value) {
+        selectedDate = e.target.value;
+        renderAll();
+      }
+    });
 
-                                                            {/* Texto da Tarefa (clique para editar inline; Enter ou sair do campo salva) */}
-                                                            <div className="flex-1 min-w-0">
-                                                                {editingTaskId === task.id ? (
-                                                                    <input
-                                                                        type="text"
-                                                                        value={editingText}
-                                                                        onChange={(e) => setEditingText(e.target.value)}
-                                                                        onBlur={() => saveEdit(task.id)}
-                                                                        onKeyDown={(e) => {
-                                                                            if (e.key === 'Enter') saveEdit(task.id);
-                                                                            if (e.key === 'Escape') cancelEdit();
-                                                                        }}
-                                                                        autoFocus
-                                                                        className="w-full px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-indigo-400 dark:border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/30 text-slate-800 dark:text-slate-100"
-                                                                    />
-                                                                ) : (
-                                                                    <div
-                                                                        onClick={() => startEdit(task)}
-                                                                        title="Clique para editar"
-                                                                        className={`cursor-text pt-0.5 transition-opacity ${
-                                                                            task.completed ? 'opacity-45' : 'opacity-100'
-                                                                        }`}
-                                                                    >
-                                                                        <p
-                                                                            className={`text-sm leading-snug break-words ${
-                                                                                task.completed
-                                                                                    ? 'line-through text-slate-500 dark:text-slate-400'
-                                                                                    : isPriorityActive
-                                                                                    ? 'font-medium text-slate-900 dark:text-slate-100'
-                                                                                    : 'text-slate-700 dark:text-slate-200'
-                                                                            }`}
-                                                                        >
-                                                                            {task.text}
-                                                                        </p>
-                                                                    </div>
-                                                                )}
-                                                            </div>
+    document.getElementById("btn-toggle-other-days").addEventListener("click", () => {
+      otherDaysPanel.classList.toggle("hidden");
+      renderOtherDaysPanel();
+    });
 
-                                                            {/* Ações à Direita: Prioridade (Bandeira) e Excluir (Lixeira) */}
-                                                            <div
-                                                                className={`flex items-center flex-shrink-0 gap-0.5 transition-opacity ${
-                                                                    task.completed
-                                                                        ? 'opacity-40 hover:opacity-90'
-                                                                        : 'opacity-100'
-                                                                }`}
-                                                            >
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => toggleTaskPriority(task.id)}
-                                                                    className={`p-1 rounded-md transition-all ${
-                                                                        task.priority && !task.completed
-                                                                            ? 'text-rose-500 dark:text-rose-400 opacity-100 hover:bg-rose-100 dark:hover:bg-rose-900/40'
-                                                                            : task.priority && task.completed
-                                                                            ? 'text-rose-400 dark:text-rose-500 hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
-                                                                            : 'text-slate-300 dark:text-slate-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/60'
-                                                                    }`}
-                                                                    title={task.priority ? 'Remover prioridade' : 'Marcar como prioridade'}
-                                                                    aria-label="Alternar prioridade"
-                                                                >
-                                                                    <FlagIcon filled={!!task.priority} size={14} />
-                                                                </button>
+    document.getElementById("btn-close-other-days").addEventListener("click", () => {
+      otherDaysPanel.classList.add("hidden");
+    });
 
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => deleteTask(task.id)}
-                                                                    className="p-1 rounded-md text-slate-300 dark:text-slate-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-all"
-                                                                    title="Excluir tarefa"
-                                                                    aria-label="Excluir tarefa"
-                                                                >
-                                                                    <TrashIcon />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </section>
-                                );
-                            })}
-                        </main>
-                    </div>
-                </div>
-            );
-        }
+    btnNewPriority.addEventListener("click", () => {
+      newPriority = !newPriority;
+      if (newPriority) {
+        btnNewPriority.className = "inline-flex items-center gap-2 rounded-xl border border-rose-500 bg-rose-500/20 px-4 py-3.5 text-sm font-semibold text-rose-300 transition";
+      } else {
+        btnNewPriority.className = "inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-rose-500/60";
+      }
+    });
 
-        // Renderização da Aplicação
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<AgendaApp />);
-    </script>
+    taskForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = taskInput.value.trim();
+      if (!text) return;
+      await createTask(text, newPriority, selectedDate);
+      taskInput.value = "";
+      if (newPriority) btnNewPriority.click();
+    });
+
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentFilter = btn.dataset.filter;
+        document.querySelectorAll(".filter-btn").forEach((b) => {
+          const active = b.dataset.filter === currentFilter;
+          b.className = active
+            ? "filter-btn rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white"
+            : "filter-btn rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800";
+        });
+        renderTasks();
+      });
+    });
+
+    initFirebase();
+  </script>
 </body>
 </html>

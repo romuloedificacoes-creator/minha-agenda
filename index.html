@@ -25,7 +25,6 @@
       color: #f8fafc;
     }
 
-    /* Animação do check verde estilo Nike */
     @keyframes popCheck {
       0% { transform: scale(0.6); opacity: 0.4; }
       60% { transform: scale(1.18); }
@@ -35,13 +34,54 @@
       animation: popCheck 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    /* Barra de rolagem discreta */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    .shake-anim {
+      animation: shake 0.25s ease-in-out;
+    }
+
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/30">
+
+  <!-- Tela de Bloqueio por Senha -->
+  <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 px-4 backdrop-blur-md">
+    <div id="lock-card" class="w-full max-w-sm rounded-3xl border border-slate-800 bg-slate-900 p-7 shadow-2xl">
+      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-lg shadow-indigo-500/25">
+        <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <h2 class="text-center text-xl font-extrabold text-white">Minha Agenda</h2>
+      <p class="mt-1 text-center text-xs text-slate-400">Digite sua senha para acessar suas tarefas</p>
+
+      <form id="lock-form" class="mt-6 space-y-4">
+        <div>
+          <input id="password-input" type="password" autocomplete="current-password" required placeholder="Digite a senha..."
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3.5 text-center text-base tracking-widest text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25" />
+          <p id="lock-error" class="mt-2 hidden text-center text-xs font-semibold text-rose-400">Senha incorreta. Tente novamente.</p>
+        </div>
+
+        <label class="flex cursor-pointer items-center justify-center gap-2 text-xs text-slate-400 select-none">
+          <input id="remember-device" type="checkbox" checked class="h-4 w-4 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-indigo-500" />
+          <span>Manter conectado neste dispositivo</span>
+        </label>
+
+        <button type="submit"
+          class="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-[0.99]">
+          Entrar
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- Topo -->
   <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
@@ -76,6 +116,15 @@
           <span id="sync-dot" class="h-2 w-2 rounded-full bg-amber-400"></span>
           <span id="sync-text">Salvo Localmente</span>
         </div>
+
+        <!-- Botão Bloquear -->
+        <button id="btn-lock-app" title="Bloquear agenda"
+          class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900 text-slate-400 transition hover:border-rose-500/60 hover:text-rose-400">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round" />
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -86,7 +135,6 @@
     <!-- Barra de Navegação do Dia -->
     <section class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl sm:p-5">
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <!-- Controle Anterior / Data Atual / Próximo -->
         <div class="flex items-center gap-2 sm:gap-3">
           <button id="btn-prev-day" title="Dia anterior"
             class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-800/80 text-slate-200 transition hover:border-indigo-500 hover:bg-slate-800">
@@ -114,7 +162,6 @@
           </button>
         </div>
 
-        <!-- Seletor direto de data + contadores -->
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs font-medium text-slate-300">
             <span>Pendentes: <strong id="count-pending" class="text-indigo-400">0</strong></span>
@@ -155,7 +202,6 @@
         </div>
 
         <div class="flex items-center gap-2.5">
-          <!-- Botão Bandeira de Prioridade -->
           <button type="button" id="btn-new-priority"
             class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-rose-500/60"
             title="Marcar como prioridade">
@@ -187,7 +233,7 @@
       </div>
     </section>
 
-    <!-- Grade de Tarefas Lado a Lado (Espaçosa) -->
+    <!-- Grade de Tarefas Lado a Lado -->
     <section>
       <div id="tasks-grid" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
 
@@ -213,17 +259,72 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // =========================================================
-    // COLE AQUI AS SUAS 6 CHAVES DO FIREBASE (DO SEU index.html)
+    // 1. COLE AQUI AS SUAS 6 CHAVES DO FIREBASE
     // =========================================================
     const firebaseConfig = {
-      apiKey: "AIzaSyD3BlVz3O8y6AF6IQkdG1nKNAZZ-O4jcMw",
-  authDomain: "minha-agenda-d822c.firebaseapp.com",
-  projectId: "minha-agenda-d822c",
-  storageBucket: "minha-agenda-d822c.firebasestorage.app",
-  messagingSenderId: "424693571025",
-  appId: "1:424693571025:web:2f068af3f077f36e5a54f0"
-
+      apiKey: "SUA_API_KEY_AQUI",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.firebasestorage.app",
+      messagingSenderId: "SEU_NUMERO",
+      appId: "SEU_APP_ID"
     };
+
+    // =========================================================
+    // 2. DEFINA AQUI A SUA SENHA DE ACESSO AO APP
+    // =========================================================
+    const APP_PASSWORD = "1234";
+
+    // Controle da Tela de Senha
+    const AUTH_KEY = "minha_agenda_auth_ok";
+    const lockScreen = document.getElementById("lock-screen");
+    const lockCard = document.getElementById("lock-card");
+    const lockForm = document.getElementById("lock-form");
+    const passwordInput = document.getElementById("password-input");
+    const rememberDevice = document.getElementById("remember-device");
+    const lockError = document.getElementById("lock-error");
+    const btnLockApp = document.getElementById("btn-lock-app");
+
+    function checkLockStatus() {
+      const unlocked =
+        localStorage.getItem(AUTH_KEY) === "true" ||
+        sessionStorage.getItem(AUTH_KEY) === "true";
+
+      if (unlocked) {
+        lockScreen.classList.add("hidden");
+      } else {
+        lockScreen.classList.remove("hidden");
+        setTimeout(() => passwordInput.focus(), 100);
+      }
+    }
+
+    lockForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (passwordInput.value === APP_PASSWORD) {
+        lockError.classList.add("hidden");
+        passwordInput.value = "";
+        if (rememberDevice.checked) {
+          localStorage.setItem(AUTH_KEY, "true");
+        } else {
+          sessionStorage.setItem(AUTH_KEY, "true");
+        }
+        lockScreen.classList.add("hidden");
+      } else {
+        lockError.classList.remove("hidden");
+        lockCard.classList.remove("shake-anim");
+        void lockCard.offsetWidth;
+        lockCard.classList.add("shake-anim");
+        passwordInput.select();
+      }
+    });
+
+    btnLockApp.addEventListener("click", () => {
+      localStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(AUTH_KEY);
+      checkLockStatus();
+    });
+
+    checkLockStatus();
 
     // Estado da aplicação
     const LOCAL_KEY = "minha_agenda_tarefas_v2";
@@ -624,7 +725,6 @@
 
         card.innerHTML = `
           <div class="flex items-start gap-3.5">
-            <!-- Botão Check estilo Nike -->
             <button type="button" class="btn-check mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 transition ${
               task.done
                 ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
@@ -642,7 +742,6 @@
             </div>
           </div>
 
-          <!-- Rodapé do card com ações -->
           <div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-800/70 pt-3">
             <div>
               ${task.priority && !task.done
@@ -657,7 +756,6 @@
             </div>
 
             <div class="flex items-center gap-1">
-              <!-- Editar tarefa -->
               <button type="button" class="btn-edit rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-amber-400" title="Editar tarefa">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round" stroke-linejoin="round" />
@@ -665,7 +763,6 @@
                 </svg>
               </button>
 
-              <!-- Bandeira de Prioridade -->
               <button type="button" class="btn-flag rounded-lg p-2 transition ${
                 task.priority
                   ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
@@ -676,14 +773,12 @@
                 </svg>
               </button>
 
-              <!-- Adiar para o dia seguinte -->
               <button type="button" class="btn-move rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-indigo-400" title="Mover para o dia seguinte">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
 
-              <!-- Excluir -->
               <button type="button" class="btn-delete rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-red-400" title="Excluir tarefa">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round" />

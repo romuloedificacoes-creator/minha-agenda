@@ -90,7 +90,7 @@
         </div>
         <div>
           <h1 class="text-lg font-bold tracking-tight text-white sm:text-xl">Minha Agenda</h1>
-          <p class="text-xs text-slate-400">Organização diária e mensal</p>
+          <p class="text-xs text-slate-400">Organização diária, mensal e consultoria</p>
         </div>
       </div>
 
@@ -101,7 +101,7 @@
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round" />
           </svg>
-          <span>Dias com tarefas</span>
+          <span>Dias com registros</span>
         </button>
 
         <div id="sync-badge"
@@ -166,12 +166,6 @@
             </button>
           </div>
 
-          <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs font-medium text-slate-300">
-            <span>Pendentes: <strong id="count-pending" class="text-indigo-400">0</strong></span>
-            <span class="text-slate-700">|</span>
-            <span>Feitas: <strong id="count-done" class="text-emerald-400">0</strong></span>
-          </div>
-
           <input id="date-picker" type="date"
             class="rounded-xl border border-slate-700 bg-slate-800/90 px-3 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-indigo-500 sm:text-sm [color-scheme:dark]" />
         </div>
@@ -203,13 +197,66 @@
         </div>
         <div id="month-grid" class="grid grid-cols-7 gap-1.5"></div>
       </div>
+
+      <!-- Legenda do Calendário -->
+      <div class="mt-3 flex flex-wrap items-center gap-4 border-t border-slate-800/70 pt-2.5 text-[11px] text-slate-400">
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-indigo-400"></span> Tarefa</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-amber-400"></span> Consultoria</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-rose-400"></span> Prioridade</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-400"></span> Tudo concluído</span>
+      </div>
     </section>
 
-    <!-- Painel Expansível: Dias com tarefas -->
+    <!-- Cards da Tela Inicial: Tarefas e Consultoria -->
+    <section class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <!-- Card Tarefas -->
+      <button id="card-tab-tarefa" type="button"
+        class="group flex items-center justify-between rounded-2xl border-2 border-indigo-500 bg-indigo-600/15 p-5 text-left shadow-lg transition hover:bg-indigo-600/20">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-extrabold text-white">Tarefas</h3>
+            <p class="text-xs text-slate-300">Atividades do dia</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-semibold text-indigo-300"><strong id="tarefa-pending" class="text-base text-white">0</strong> pendente(s)</div>
+          <div class="text-[11px] font-medium text-emerald-400"><span id="tarefa-done">0</span> feita(s)</div>
+        </div>
+      </button>
+
+      <!-- Card Consultoria -->
+      <button id="card-tab-consultoria" type="button"
+        class="group flex items-center justify-between rounded-2xl border-2 border-slate-800 bg-slate-900/80 p-5 text-left shadow-lg transition hover:border-amber-500/60 hover:bg-slate-900">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 shadow-lg shadow-amber-500/10">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-extrabold text-white">Consultoria</h3>
+            <p class="text-xs text-slate-400">Demandas e encaminhamentos</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-semibold text-amber-300"><strong id="consultoria-pending" class="text-base text-white">0</strong> pendente(s)</div>
+          <div class="text-[11px] font-medium text-emerald-400"><span id="consultoria-done">0</span> feita(s)</div>
+        </div>
+      </button>
+    </section>
+
+    <!-- Painel Expansível: Dias com registros -->
     <section id="other-days-panel" class="mb-6 hidden rounded-2xl border border-indigo-500/30 bg-slate-900/90 p-5 shadow-2xl">
       <div class="mb-4 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-white">Dias com tarefas registradas</h3>
+          <h3 class="text-base font-bold text-white">Dias com registros (Tarefas e Consultoria)</h3>
           <p class="text-xs text-slate-400">Clique em qualquer dia para abrir a agenda dele na tela principal</p>
         </div>
         <button id="btn-close-other-days"
@@ -220,8 +267,14 @@
       <div id="other-days-grid" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
     </section>
 
-    <!-- Formulário de Nova Tarefa -->
-    <section class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-lg sm:p-5">
+    <!-- Formulário de Novo Item (Adapta entre Tarefa e Consultoria) -->
+    <section id="form-section" class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-lg sm:p-5">
+      <div class="mb-3 flex items-center justify-between">
+        <span id="active-section-badge" class="inline-flex items-center gap-2 rounded-lg bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
+          Modo: Tarefas
+        </span>
+      </div>
+
       <form id="task-form" class="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div class="relative flex-1">
           <input id="task-input" type="text" required placeholder="Adicionar nova tarefa para este dia..."
@@ -238,7 +291,7 @@
             <span>Prioridade</span>
           </button>
 
-          <button type="submit"
+          <button id="btn-submit-task" type="submit"
             class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-[0.99] sm:flex-none">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path d="M12 5v14M5 12h14" stroke-linecap="round" />
@@ -260,7 +313,7 @@
       </div>
     </section>
 
-    <!-- Grade de Tarefas Lado a Lado -->
+    <!-- Grade de Cards Lado a Lado -->
     <section>
       <div id="tasks-grid" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
 
@@ -272,8 +325,8 @@
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <h3 class="text-base font-bold text-slate-200">Nenhuma tarefa para este dia</h3>
-        <p class="mt-1 text-sm text-slate-400">Adicione uma tarefa acima ou selecione outro dia no calendário.</p>
+        <h3 id="empty-title" class="text-base font-bold text-slate-200">Nenhuma tarefa para este dia</h3>
+        <p class="mt-1 text-sm text-slate-400">Adicione um item acima ou selecione outro dia no calendário.</p>
       </div>
     </section>
   </main>
@@ -336,7 +389,6 @@
     });
 
     btnLockApp.addEventListener("click", showLockScreen);
-
     showLockScreen();
 
     // Estado da aplicação
@@ -345,6 +397,7 @@
     let cloudActive = false;
     let allTasks = [];
     let selectedDate = toDateKey(new Date());
+    let activeCategory = "tarefa"; // "tarefa" ou "consultoria"
     let currentFilter = "all";
     let newPriority = false;
     let editingTaskId = null;
@@ -366,10 +419,19 @@
     const monthGrid = document.getElementById("month-grid");
     const btnViewWeek = document.getElementById("btn-view-week");
     const btnViewMonth = document.getElementById("btn-view-month");
+
+    const cardTabTarefa = document.getElementById("card-tab-tarefa");
+    const cardTabConsultoria = document.getElementById("card-tab-consultoria");
+    const tarefaPendingEl = document.getElementById("tarefa-pending");
+    const tarefaDoneEl = document.getElementById("tarefa-done");
+    const consultoriaPendingEl = document.getElementById("consultoria-pending");
+    const consultoriaDoneEl = document.getElementById("consultoria-done");
+    const activeSectionBadge = document.getElementById("active-section-badge");
+    const btnSubmitTask = document.getElementById("btn-submit-task");
+    const emptyTitle = document.getElementById("empty-title");
+
     const tasksGrid = document.getElementById("tasks-grid");
     const emptyState = document.getElementById("empty-state");
-    const countPending = document.getElementById("count-pending");
-    const countDone = document.getElementById("count-done");
     const taskForm = document.getElementById("task-form");
     const taskInput = document.getElementById("task-input");
     const btnNewPriority = document.getElementById("btn-new-priority");
@@ -407,6 +469,10 @@
       return parseDateKey(dateKey).toLocaleDateString("pt-BR", {
         weekday: "long", day: "2-digit", month: "long", year: "numeric"
       });
+    }
+
+    function getItemCategory(item) {
+      return item.category === "consultoria" ? "consultoria" : "tarefa";
     }
 
     // Status da nuvem
@@ -459,6 +525,7 @@
             date: d.data().date || toDateKey(new Date()),
             text: d.data().text || "",
             encaminhamentos: d.data().encaminhamentos || "",
+            category: d.data().category === "consultoria" ? "consultoria" : "tarefa",
             done: Boolean(d.data().done),
             priority: Boolean(d.data().priority),
             createdAt: d.data().createdAt || Date.now()
@@ -477,10 +544,11 @@
     }
 
     // Operações CRUD
-    async function createTask(text, priority, dateKey) {
+    async function createTask(text, priority, dateKey, category) {
       const payload = {
         text: text.trim(),
         encaminhamentos: "",
+        category: category === "consultoria" ? "consultoria" : "tarefa",
         priority: Boolean(priority),
         done: false,
         date: dateKey,
@@ -572,7 +640,42 @@
       }
     }
 
-    // Renderização
+    // Renderização dos Cards Tarefas / Consultoria
+    function renderCategoryCards() {
+      const dayItems = allTasks.filter((t) => t.date === selectedDate);
+      const dayTarefas = dayItems.filter((t) => getItemCategory(t) === "tarefa");
+      const dayConsultoria = dayItems.filter((t) => getItemCategory(t) === "consultoria");
+
+      tarefaPendingEl.textContent = dayTarefas.filter((t) => !t.done).length;
+      tarefaDoneEl.textContent = dayTarefas.filter((t) => t.done).length;
+      consultoriaPendingEl.textContent = dayConsultoria.filter((t) => !t.done).length;
+      consultoriaDoneEl.textContent = dayConsultoria.filter((t) => t.done).length;
+
+      const isConsultoria = activeCategory === "consultoria";
+
+      cardTabTarefa.className = !isConsultoria
+        ? "group flex items-center justify-between rounded-2xl border-2 border-indigo-500 bg-indigo-600/15 p-5 text-left shadow-lg transition hover:bg-indigo-600/20"
+        : "group flex items-center justify-between rounded-2xl border-2 border-slate-800 bg-slate-900/80 p-5 text-left shadow-lg transition hover:border-indigo-500/60 hover:bg-slate-900";
+
+      cardTabConsultoria.className = isConsultoria
+        ? "group flex items-center justify-between rounded-2xl border-2 border-amber-500 bg-amber-500/15 p-5 text-left shadow-lg transition hover:bg-amber-500/20"
+        : "group flex items-center justify-between rounded-2xl border-2 border-slate-800 bg-slate-900/80 p-5 text-left shadow-lg transition hover:border-amber-500/60 hover:bg-slate-900";
+
+      if (isConsultoria) {
+        activeSectionBadge.textContent = "Modo: Consultoria";
+        activeSectionBadge.className = "inline-flex items-center gap-2 rounded-lg bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300";
+        taskInput.placeholder = "Adicionar novo item de consultoria para este dia...";
+        btnSubmitTask.className = "inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-amber-600/25 transition hover:bg-amber-500 active:scale-[0.99] sm:flex-none";
+        emptyTitle.textContent = "Nenhuma consultoria para este dia";
+      } else {
+        activeSectionBadge.textContent = "Modo: Tarefas";
+        activeSectionBadge.className = "inline-flex items-center gap-2 rounded-lg bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300";
+        taskInput.placeholder = "Adicionar nova tarefa para este dia...";
+        btnSubmitTask.className = "inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-500 active:scale-[0.99] sm:flex-none";
+        emptyTitle.textContent = "Nenhuma tarefa para este dia";
+      }
+    }
+
     function renderDateHeader() {
       const todayKey = toDateKey(new Date());
       selectedDayTitle.textContent = getRelativeLabel(selectedDate);
@@ -600,6 +703,32 @@
       }
     }
 
+    function getDayDotsHtml(key, isSelected) {
+      const dayItems = allTasks.filter((t) => t.date === key);
+      if (dayItems.length === 0) return "";
+
+      const pendingTarefas = dayItems.filter((t) => !t.done && getItemCategory(t) === "tarefa");
+      const pendingConsultoria = dayItems.filter((t) => !t.done && getItemCategory(t) === "consultoria");
+      const hasPriority = dayItems.some((t) => !t.done && t.priority);
+      const allDone = dayItems.every((t) => t.done);
+
+      if (allDone) {
+        return `<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>`;
+      }
+
+      let dots = "";
+      if (hasPriority) {
+        dots += `<span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>`;
+      }
+      if (pendingTarefas.length > 0 && !hasPriority) {
+        dots += `<span class="h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : "bg-indigo-400"}"></span>`;
+      }
+      if (pendingConsultoria.length > 0) {
+        dots += `<span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>`;
+      }
+      return dots;
+    }
+
     function renderWeekStrip() {
       weekStrip.innerHTML = "";
       const todayKey = toDateKey(new Date());
@@ -615,10 +744,6 @@
         const key = toDateKey(d);
         const isSelected = key === selectedDate;
         const isToday = key === todayKey;
-
-        const dayTasks = allTasks.filter((t) => t.date === key);
-        const pendingCount = dayTasks.filter((t) => !t.done).length;
-        const hasPriority = dayTasks.some((t) => !t.done && t.priority);
 
         const weekdayShort = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
         const dayNum = String(d.getDate()).padStart(2, "0");
@@ -636,9 +761,7 @@
         btn.innerHTML = `
           <span class="text-[11px] font-semibold uppercase tracking-wide ${isSelected ? "text-indigo-100" : "text-slate-400"}">${weekdayShort}</span>
           <span class="mt-0.5 text-base font-extrabold sm:text-lg">${dayNum}</span>
-          <div class="mt-1 flex h-2 items-center gap-1">
-            ${pendingCount > 0 ? `<span class="h-1.5 w-1.5 rounded-full ${hasPriority ? "bg-rose-400" : isSelected ? "bg-white" : "bg-indigo-400"}"></span>` : ""}
-          </div>
+          <div class="mt-1 flex h-2 items-center gap-1">${getDayDotsHtml(key, isSelected)}</div>
         `;
         btn.addEventListener("click", () => {
           editingTaskId = null;
@@ -677,11 +800,6 @@
         const isSelected = key === selectedDate;
         const isToday = key === todayKey;
 
-        const dayTasks = allTasks.filter((t) => t.date === key);
-        const pendingCount = dayTasks.filter((t) => !t.done).length;
-        const doneCount = dayTasks.filter((t) => t.done).length;
-        const hasPriority = dayTasks.some((t) => !t.done && t.priority);
-
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = `flex h-12 flex-col items-center justify-center rounded-xl border transition sm:h-14 ${
@@ -694,10 +812,7 @@
 
         btn.innerHTML = `
           <span class="text-xs font-bold sm:text-sm">${day}</span>
-          <div class="mt-1 flex h-2 items-center gap-1">
-            ${pendingCount > 0 ? `<span class="h-1.5 w-1.5 rounded-full ${hasPriority ? "bg-rose-400" : isSelected ? "bg-white" : "bg-indigo-400"}"></span>` : ""}
-            ${pendingCount === 0 && doneCount > 0 ? `<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>` : ""}
-          </div>
+          <div class="mt-1 flex h-2 items-center gap-1">${getDayDotsHtml(key, isSelected)}</div>
         `;
 
         btn.addEventListener("click", () => {
@@ -722,13 +837,14 @@
 
       const dates = Object.keys(grouped).sort();
       if (dates.length === 0) {
-        otherDaysGrid.innerHTML = `<p class="col-span-full text-sm text-slate-400">Ainda não há tarefas cadastradas em outros dias.</p>`;
+        otherDaysGrid.innerHTML = `<p class="col-span-full text-sm text-slate-400">Ainda não há registros em outros dias.</p>`;
         return;
       }
 
       dates.forEach((dateKey) => {
         const list = grouped[dateKey];
-        const pending = list.filter((t) => !t.done).length;
+        const pendingT = list.filter((t) => !t.done && getItemCategory(t) === "tarefa").length;
+        const pendingC = list.filter((t) => !t.done && getItemCategory(t) === "consultoria").length;
         const done = list.filter((t) => t.done).length;
         const isCurrent = dateKey === selectedDate;
 
@@ -740,19 +856,20 @@
             : "border-slate-800 bg-slate-950/60 hover:border-indigo-500/50 hover:bg-slate-800/70"
         }`;
 
-        const preview = list.slice(0, 2).map((t) =>
-          `<li class="truncate text-xs ${t.done ? "text-emerald-400" : t.priority ? "text-rose-400" : "text-slate-300"}">• ${escapeHtml(t.text)}</li>`
-        ).join("");
+        const preview = list.slice(0, 2).map((t) => {
+          const tag = getItemCategory(t) === "consultoria" ? "[C] " : "";
+          return `<li class="truncate text-xs ${t.done ? "text-emerald-400" : t.priority ? "text-rose-400" : "text-slate-300"}">• ${tag}${escapeHtml(t.text)}</li>`;
+        }).join("");
 
         card.innerHTML = `
           <div class="flex w-full items-center justify-between gap-2">
             <span class="text-sm font-bold capitalize text-white">${getRelativeLabel(dateKey)}</span>
             <span class="rounded-md bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-300">${parseDateKey(dateKey).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span>
           </div>
-          <div class="mt-1 flex items-center gap-2 text-[11px] font-medium">
-            <span class="text-indigo-400">${pending} pendente(s)</span>
-            <span class="text-slate-600">•</span>
-            <span class="text-emerald-400">${done} feita(s)</span>
+          <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-medium">
+            ${pendingT > 0 ? `<span class="text-indigo-400">${pendingT} tarefa(s)</span>` : ""}
+            ${pendingC > 0 ? `<span class="text-amber-400">${pendingC} consultoria(s)</span>` : ""}
+            ${done > 0 ? `<span class="text-emerald-400">${done} feita(s)</span>` : ""}
           </div>
           <ul class="mt-2.5 w-full space-y-1">${preview}</ul>
         `;
@@ -771,9 +888,7 @@
     }
 
     function renderTasks() {
-      const dayTasks = allTasks.filter((t) => t.date === selectedDate);
-      countPending.textContent = dayTasks.filter((t) => !t.done).length;
-      countDone.textContent = dayTasks.filter((t) => t.done).length;
+      const dayTasks = allTasks.filter((t) => t.date === selectedDate && getItemCategory(t) === activeCategory);
 
       let filtered = [...dayTasks];
       if (currentFilter === "pending") filtered = filtered.filter((t) => !t.done);
@@ -793,6 +908,7 @@
         const isEditing = editingTaskId === task.id;
         const isEditingNote = editingNoteId === task.id;
         const isPriorityStyle = task.priority && !task.done;
+        const isConsultoria = getItemCategory(task) === "consultoria";
         const card = document.createElement("article");
 
         if (isEditing) {
@@ -837,6 +953,8 @@
             ? "border-sky-300 bg-[#ccebff] text-[#084c73] shadow-md"
             : isPriorityStyle
             ? "border-rose-300 bg-[#ffd6dc] text-[#881337] shadow-md"
+            : isConsultoria
+            ? "border-amber-500/30 bg-slate-900/90 text-slate-100 shadow-md hover:border-amber-400/60"
             : "border-slate-800 bg-slate-900/80 text-slate-100 shadow-md hover:border-indigo-500/50 hover:bg-slate-900"
         }`;
 
@@ -851,7 +969,7 @@
             ? "text-[#084c73]"
             : isPriorityStyle
             ? "text-[#881337]"
-            : "text-indigo-300";
+            : isConsultoria ? "text-amber-300" : "text-indigo-300";
           const textareaClass = task.done
             ? "border-sky-300 bg-white text-[#084c73] placeholder-sky-700/50"
             : isPriorityStyle
@@ -883,7 +1001,7 @@
             ? "text-[#0a5c8a]"
             : isPriorityStyle
             ? "text-[#9f1239]"
-            : "text-indigo-400";
+            : isConsultoria ? "text-amber-400" : "text-indigo-400";
           const textClass = task.done
             ? "text-[#084c73]"
             : isPriorityStyle
@@ -991,12 +1109,14 @@
                    </span>`
                 : task.done
                 ? `<span class="inline-flex items-center gap-1 rounded-lg bg-[#15803d]/15 px-2.5 py-1 text-[11px] font-bold text-[#15803d]">Concluída</span>`
+                : isConsultoria
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/15 px-2.5 py-1 text-[11px] font-bold text-amber-300">Consultoria</span>`
                 : `<span class="text-[11px] font-medium text-slate-500">Tarefa do dia</span>`
               }
             </div>
 
             <div class="flex items-center gap-1">
-              <button type="button" class="btn-edit rounded-lg p-2 transition ${actionBtnBase}" title="Editar tarefa">
+              <button type="button" class="btn-edit rounded-lg p-2 transition ${actionBtnBase}" title="Editar">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-linecap="round" stroke-linejoin="round" />
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round" />
@@ -1015,7 +1135,7 @@
                 </svg>
               </button>
 
-              <button type="button" class="btn-delete rounded-lg p-2 transition ${deleteBtnBase}" title="Excluir tarefa">
+              <button type="button" class="btn-delete rounded-lg p-2 transition ${deleteBtnBase}" title="Excluir">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -1064,9 +1184,25 @@
     function renderAll() {
       renderDateHeader();
       renderCalendarMode();
+      renderCategoryCards();
       renderTasks();
       renderOtherDaysPanel();
     }
+
+    // Eventos dos Cards Tarefas / Consultoria
+    cardTabTarefa.addEventListener("click", () => {
+      activeCategory = "tarefa";
+      editingTaskId = null;
+      editingNoteId = null;
+      renderAll();
+    });
+
+    cardTabConsultoria.addEventListener("click", () => {
+      activeCategory = "consultoria";
+      editingTaskId = null;
+      editingNoteId = null;
+      renderAll();
+    });
 
     // Eventos da UI
     document.getElementById("btn-prev-day").addEventListener("click", () => {
@@ -1151,7 +1287,7 @@
       e.preventDefault();
       const text = taskInput.value.trim();
       if (!text) return;
-      await createTask(text, newPriority, selectedDate);
+      await createTask(text, newPriority, selectedDate, activeCategory);
       taskInput.value = "";
       if (newPriority) btnNewPriority.click();
     });
